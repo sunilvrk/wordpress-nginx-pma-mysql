@@ -1,0 +1,71 @@
+version: "3"
+
+services:
+  mysql:
+    image: 'mysql:5.7'
+    ports:
+      - ${FORWARD_DB_PORT:-3306}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-mysql_db}
+      MYSQL_USER: ${DB_USERNAME:-db_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+      - 'wpmysql:/var/lib/mysql'
+    #      - './sql_file.sql:/sql_file.sql' # uncomment this if you need to import a sql file through the terminal
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin
+    depends_on:
+      - mysql
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: secret
+      UPLOAD_LIMIT: 200M
+    networks:
+      - app-network
+
+  wordpress:
+    depends_on:
+      - mysql
+    image: wordpress:php7.4-fpm-alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 9000:9000
+    volumes:
+      - './:/var/www/html'
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: db_user
+      WORDPRESS_DB_PASSWORD: secret
+      WORDPRESS_DB_NAME: mysql_db
+    networks:
+      - app-network
+
+  server:
+    image: nginx:alpine
+    depends_on:
+      - wordpress
+    tty: true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./:/var/www/html
+      - ./nginx/conf.d/:/etc/nginx/conf.d
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  wpmysql: {}
