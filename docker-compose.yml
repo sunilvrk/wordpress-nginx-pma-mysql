@@ -26,7 +26,7 @@ services:
       - 8080:80
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
       UPLOAD_LIMIT: 200M
     networks:
       - app-network
@@ -45,9 +45,9 @@ services:
       - './:/var/www/html'
     environment:
       WORDPRESS_DB_HOST: mysql
-      WORDPRESS_DB_USER: db_user
-      WORDPRESS_DB_PASSWORD: secret
-      WORDPRESS_DB_NAME: mysql_db
+      WORDPRESS_DB_USER: ${DB_USERNAME:-db_user}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-secret}
+      WORDPRESS_DB_NAME: ${DB_DATABASE:-mysql_db}
     networks:
       - app-network
 
@@ -60,7 +60,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ./:/var/www/html
+      - './:/var/www/html'
       - ./nginx/conf.d/:/etc/nginx/conf.d
     networks:
       - app-network
