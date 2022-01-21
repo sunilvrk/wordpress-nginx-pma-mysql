@@ -27,7 +27,7 @@ services:
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
-      UPLOAD_LIMIT: 200M
+      UPLOAD_LIMIT: 2000M
     networks:
       - app-network
 
@@ -43,6 +43,7 @@ services:
       - 9000:9000
     volumes:
       - './:/var/www/html'
+      - './php/php.ini:/usr/local/etc/php/conf.d/local.ini'
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_USER: ${DB_USERNAME:-db_user}
